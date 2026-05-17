@@ -1,399 +1,280 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-fullscreen" />
-  <title>Shoaleh 70 Messages</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-fullscreen" />
+<title>Shoaleh 70 Messages</title>
 
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { background: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; width: 100vw; height: 100vh; overflow: hidden; touch-action: manipulation; }
-    #camera-feed { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; transform: scaleX(-1); }
-    #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.45); z-index: 1; }
-    .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 40px; }
-    .screen.active { display: flex; }
-
-    #pin-screen .emoji { font-size: 80px; margin-bottom: 20px; }
-    #pin-screen h1 { font-size: 50px; font-weight: 800; text-align: center; margin-bottom: 10px; }
-    #pin-screen p { font-size: 24px; opacity: 0.8; margin-bottom: 40px; text-align: center; }
-    #pin-input { font-size: 44px; font-weight: 700; width: 220px; text-align: center; padding: 15px; border-radius: 20px; border: 3px solid rgba(255,255,255,0.3); background: rgba(0,0,0,0.5); color: white; letter-spacing: 10px; outline: none; transition: border-color 0.3s; margin-bottom: 10px; }
-    #pin-input:focus { border-color: #22c55e; }
-    #pin-input::placeholder { color: rgba(255,255,255,0.2); letter-spacing: normal; font-size: 34px; }
-
-    #welcome-screen h1 { font-size: 56px; font-weight: 800; text-align: center; text-shadow: 2px 2px 8px rgba(0,0,0,0.8); margin-bottom: 16px; line-height: 1.18; }
-    #welcome-screen p { font-size: 25px; opacity: 0.9; text-align: center; margin-bottom: 52px; max-width: 900px; }
-
-    .btn-start { background: linear-gradient(135deg, #22c55e, #16a34a); color: white; font-size: 48px; font-weight: 900; width: 300px; height: 120px; border: none; border-radius: 28px; cursor: pointer; box-shadow: 0 8px 30px rgba(34,197,94,0.5); letter-spacing: 2px; }
-    .btn-start:active { transform: scale(0.97); }
-
-    #countdown-screen h2 { font-size: 42px; font-weight: 600; opacity: 0.85; margin-bottom: 10px; }
-    #countdown-number { font-size: 240px; font-weight: 900; line-height: 1; text-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-    #countdown-screen p { font-size: 22px; opacity: 0.7; margin-top: 20px; text-align: center; }
-
-    #recording-screen { justify-content: space-between; padding: 30px 30px 50px 30px; }
-    .rec-top-bar { width: 100%; display: flex; justify-content: space-between; align-items: center; }
-    .rec-indicator { display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.6); padding: 12px 20px; border-radius: 14px; }
-    .rec-dot { width: 20px; height: 20px; background: red; border-radius: 50%; transition: opacity 0.5s ease; }
-    .rec-dot.blink { opacity: 0.15; }
-    .rec-label { font-size: 24px; font-weight: 700; color: red; }
-    .rec-timer { font-size: 40px; font-weight: 700; font-variant-numeric: tabular-nums; background: rgba(0,0,0,0.6); padding: 12px 22px; border-radius: 14px; }
-
-    #warning-box { display: none; flex-direction: column; align-items: center; gap: 10px; background: rgba(0,0,0,0.75); border: 2px solid #facc15; border-radius: 20px; padding: 24px 40px; }
-    #warning-box.visible { display: flex; }
-    #warning-box .warn-title { font-size: 34px; font-weight: 700; color: #facc15; }
-    #warning-box .warn-seconds { font-size: 28px; font-weight: 600; color: white; }
-
-    .btn-finish { background: linear-gradient(135deg, #ef4444, #f97316); color: white; font-size: 42px; font-weight: 900; width: 280px; height: 110px; border: none; border-radius: 24px; cursor: pointer; box-shadow: 0 8px 30px rgba(239,68,68,0.5); letter-spacing: 2px; }
-    .btn-finish:active { transform: scale(0.97); }
-
-    #review-screen { background: rgba(0,0,0,0.7); }
-    #review-screen h2 { font-size: 54px; font-weight: 800; margin-bottom: 20px; }
-    #review-screen p { font-size: 30px; text-align: center; opacity: 0.9; line-height: 1.5; margin-bottom: 50px; }
-    .review-buttons { display: flex; gap: 40px; }
-    .btn-yes, .btn-no { width: 210px; height: 150px; border: none; border-radius: 24px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
-    .btn-yes { background: linear-gradient(180deg, #22c55e, #16a34a); box-shadow: 0 8px 25px rgba(34,197,94,0.5); }
-    .btn-no { background: linear-gradient(180deg, #f97316, #ef4444); box-shadow: 0 8px 25px rgba(249,115,22,0.5); }
-    .btn-yes:active, .btn-no:active { transform: scale(0.97); }
-    .btn-yes .btn-emoji, .btn-no .btn-emoji { font-size: 46px; }
-    .btn-yes .btn-text, .btn-no .btn-text { font-size: 22px; font-weight: 700; color: white; text-align: center; line-height: 1.3; }
-
-    #uploading-screen { background: rgba(0,0,0,0.75); }
-    .spinner { width: 80px; height: 80px; border: 6px solid rgba(255,255,255,0.2); border-top-color: #fff; border-radius: 50%; animation: spin 0.9s linear infinite; margin-bottom: 30px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    #uploading-screen h2 { font-size: 36px; font-weight: 600; text-align: center; }
-    #uploading-screen p { font-size: 22px; opacity: 0.7; margin-top: 12px; }
-
-    #thankyou-screen { background: rgba(0,0,0,0.75); }
-    #thankyou-screen .big-emoji { font-size: 100px; margin-bottom: 20px; }
-    #thankyou-screen h2 { font-size: 58px; font-weight: 800; text-align: center; margin-bottom: 16px; }
-    #thankyou-screen p { font-size: 26px; opacity: 0.85; text-align: center; }
-
-    #error-screen { background: rgba(0,0,0,0.8); }
-    #error-screen .big-emoji { font-size: 80px; margin-bottom: 20px; }
-    #error-screen h2 { font-size: 40px; font-weight: 700; text-align: center; margin-bottom: 14px; color: #fca5a5; }
-    #error-screen p { font-size: 22px; opacity: 0.8; text-align: center; margin-bottom: 40px; }
-    .btn-tryagain { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; font-size: 30px; font-weight: 700; padding: 20px 50px; border: none; border-radius: 20px; cursor: pointer; }
-  </style>
+<link rel="stylesheet" href="styles.css" />
+<style>
+/* Minimal critical styles kept inline for reliability; most layout is in styles.css */
+body { background:#000;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;width:100vw;height:100vh;overflow:hidden; }
+#camera-feed { position:fixed; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:0; transform:scaleX(-1); }
+.screen{ position:fixed; top:0; left:0; width:100%; height:100%; z-index:2; display:none; flex-direction:column; align-items:center; justify-content:center; padding:40px; }
+.screen.active{ display:flex; }
+.btn-start{ background:linear-gradient(135deg,#22c55e,#16a34a); color:white; font-size:48px; font-weight:900; width:300px; height:120px; border:none; border-radius:28px; cursor:pointer; box-shadow:0 8px 30px rgba(34,197,94,0.5); }
+</style>
 </head>
-
 <body>
-  <video id="camera-feed" autoplay muted playsinline></video>
-  <div id="overlay"></div>
+<video id="camera-feed" autoplay muted playsinline></video>
+<div id="overlay"></div>
 
-  <div class="screen" id="pin-screen">
-    <div class="emoji">🔒</div>
-    <h1>Private Event</h1>
-    <p>Please enter the party PIN</p>
-    <input type="password" id="pin-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="••••" />
-    <p id="pin-error" style="color: #ef4444; font-size: 22px; font-weight: 600; margin-top: 10px; opacity: 0; transition: opacity 0.3s;">Incorrect PIN</p>
-    <button class="btn-start" style="margin-top: 20px; font-size: 40px;" onclick="checkPin()">ENTER</button>
-  </div>
+<div class="screen" id="pin-screen">
+<div class="emoji">🔒</div>
+<h1>Private Event</h1>
+<p>Please enter the party PIN</p>
+<input type="password" id="pin-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="- - - - " />
+<p id="pin-error" style="color:#ef4444;font-size:22px;font-weight:600;margin-top:10px;opacity:0;transition:opacity .3s;">Incorrect PIN</p>
+<button class="btn-start" style="margin-top:20px;font-size:40px;" onclick="checkPin()">ENTER</button>
+</div>
 
-  <div class="screen" id="welcome-screen">
-    <h1>Shoaleh is turning 70!</h1>
-    <p>Please leave her a message for this milestone. It can be simple or a story about what she means to you.</p>
-    <button class="btn-start" onclick="startCountdown()">START</button>
-  </div>
+<div class="screen" id="welcome-screen">
+<h1 class="welcome-title">Shoaleh is turning 70!</h1>
+<p class="welcome-text">Please leave her a message for this milestone. It can be simple or a story about what she means to you.</p>
+<button class="btn-start" onclick="startCountdown()">START</button>
+</div>
 
-  <div class="screen" id="countdown-screen">
-    <h2>Get Ready...</h2>
-    <div id="countdown-number">10</div>
-    <p>Recording starts when the timer reaches 0</p>
-  </div>
+<!-- The rest of the screens (countdown, recording, review, uploading, thank you, error) are the same as your original app -->
+<!-- COUNTDOWN -->
+<div class="screen" id="countdown-screen">
+<h2>Get Ready...</h2>
+<div id="countdown-number">10</div>
+<p>Recording starts when the timer reaches 0</p>
+</div>
 
-  <div class="screen" id="recording-screen">
-    <div class="rec-top-bar">
-      <div class="rec-indicator">
-        <div class="rec-dot" id="rec-dot"></div>
-        <span class="rec-label">REC</span>
-      </div>
-      <div class="rec-timer" id="rec-timer">0:00</div>
-    </div>
-    <div id="warning-box">
-      <span class="warn-title">⏱ Time Running Out!</span>
-      <span class="warn-seconds" id="warn-seconds">10 seconds remaining</span>
-    </div>
-    <button class="btn-finish" onclick="finishRecording()">FINISH</button>
-  </div>
+<!-- RECORDING -->
+<div class="screen" id="recording-screen">
+<div class="rec-top-bar">
+<div class="rec-indicator">
+<div class="rec-dot" id="rec-dot"></div>
+<span class="rec-label">REC</span>
+</div>
+<div class="rec-timer" id="rec-timer">0:00</div>
+</div>
+<div id="warning-box">
+<span class="warn-title">⏱ Time Running Out!</span>
+<span class="warn-seconds" id="warn-seconds">10 seconds remaining</span>
+</div>
+<button class="btn-finish" onclick="finishRecording()">FINISH</button>
+</div>
 
-  <div class="screen" id="review-screen">
-    <h2>Great job! 🎬</h2>
-    <p>Are you pleased with your video,<br>or would you like to record again?</p>
-    <div class="review-buttons">
-      <button class="btn-yes" onclick="saveVideo()">
-        <span class="btn-emoji">✅</span>
-        <span class="btn-text">YES!<br>Send It!</span>
-      </button>
-      <button class="btn-no" onclick="recordAgain()">
-        <span class="btn-emoji">🔄</span>
-        <span class="btn-text">Record<br>Again</span>
-      </button>
-    </div>
-  </div>
+<!-- REVIEW -->
+<div class="screen" id="review-screen">
+<h2>Great job! 🎬</h2>
+<p>Are you pleased with your video,
+or would you like to record again?</p>
+<div class="review-buttons">
+<button class="btn-yes" onclick="saveVideo()">
+<span class="btn-emoji">✅</span>
+<span class="btn-text">YES!
+Send It!</span>
+</button>
+<button class="btn-no" onclick="recordAgain()">
+<span class="btn-emoji">🔄</span>
+<span class="btn-text">Record
+Again</span>
+</button>
+</div>
+</div>
 
-  <div class="screen" id="uploading-screen">
-    <div class="spinner"></div>
-    <h2 id="upload-status">Saving your message...</h2>
-    <p>Please wait a moment</p>
-  </div>
+<!-- UPLOADING -->
+<div class="screen" id="uploading-screen">
+<div class="spinner"></div>
+<h2 id="upload-status">Saving your message...</h2>
+<p>Please wait a moment</p>
+</div>
 
-  <div class="screen" id="thankyou-screen">
-    <div class="big-emoji">🎉</div>
-    <h2>Thank You!</h2>
-    <p>Your message has been saved.<br>Enjoy the party! 🥳</p>
-  </div>
+<!-- THANK YOU -->
+<div class="screen" id="thankyou-screen">
+<div class="big-emoji">🎉</div>
+<h2>Thank You!</h2>
+<p>Your message has been saved.
+Enjoy the party! 🥳</p>
+</div>
 
-  <div class="screen" id="error-screen">
-    <div class="big-emoji">😕</div>
-    <h2>Something went wrong</h2>
-    <p id="error-message">There was a problem saving your video.<br>Please try again.</p>
-    <button class="btn-tryagain" onclick="resetToWelcome()">Try Again</button>
-  </div>
+<!-- ERROR -->
+<div class="screen" id="error-screen">
+<div class="big-emoji">😕</div>
+<h2>Something went wrong</h2>
+<p id="error-message">There was a problem saving your video.
+Please try again.</p>
+<button class="btn-tryagain" onclick="resetToWelcome()">Try Again</button>
+</div>
 
-  <script>
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyvAd_y2m5bcGJ_vbC2o0NmTThlJgQ_nB0zJPKwID49JH2mrQ2E1LT1j-oylCCoK7u6Lw/exec";
-    const PARTY_PIN = "0624";
+<script>
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyvAd_y2m5bcGJ_vbC2o0NmTThlJgQ_nB0zJPKwID49JH2mrQ2E1LT1j-oylCCoK7u6Lw/exec";
+const PARTY_PIN = "0624";
 
-    let mediaRecorder = null;
-    let recordedChunks = [];
-    let videoStream = null;
-    let countdownTimer = null;
-    let recordingTimer = null;
-    let blinkTimer = null;
-    let recordingSeconds = 0;
-    let isRecording = false;
-    let currentMimeType = "";
+let mediaRecorder = null;
+let recordedChunks = [];
+let videoStream = null;
+let countdownTimer = null;
+let recordingTimer = null;
+let blinkTimer = null;
+let recordingSeconds = 0;
+let isRecording = false;
+let currentMimeType = "";
 
-    window.addEventListener("load", () => {
-      if (localStorage.getItem("party_unlocked") === "true") {
-        startCamera();
-        showScreen("welcome-screen");
-      } else {
-        showScreen("pin-screen");
-      }
-    });
+window.addEventListener("load", () => {
+if (localStorage.getItem("party_unlocked") === "true") {
+startCamera();
+showScreen("welcome-screen");
+} else {
+showScreen("pin-screen");
+}
+});
 
-    function checkPin() {
-      const input = document.getElementById("pin-input").value;
-      const errorText = document.getElementById("pin-error");
+function checkPin() {
+const input = document.getElementById("pin-input").value;
+const errorText = document.getElementById("pin-error");
+if (input === PARTY_PIN) {
+localStorage.setItem("party_unlocked", "true");
+startCamera();
+showScreen("welcome-screen");
+} else {
+errorText.style.opacity = "1";
+setTimeout(() => { errorText.style.opacity = "0"; }, 3000);
+document.getElementById("pin-input").value = "";
+}
+}
 
-      if (input === PARTY_PIN) {
-        localStorage.setItem("party_unlocked", "true");
-        startCamera();
-        showScreen("welcome-screen");
-      } else {
-        errorText.style.opacity = "1";
-        setTimeout(() => {
-          errorText.style.opacity = "0";
-        }, 3000);
-        document.getElementById("pin-input").value = "";
-      }
-    }
+async function startCamera() {
+try {
+videoStream = await navigator.mediaDevices.getUserMedia({
+video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
+audio: { echoCancellation: true, noiseSuppression: true }
+});
+document.getElementById("camera-feed").srcObject = videoStream;
+} catch (err) {
+console.error("Camera error:", err);
+showError("Could not access the camera. Please make sure you have allowed camera/microphone access.");
+}
+}
 
-    async function startCamera() {
-      try {
-        videoStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
-          audio: { echoCancellation: true, noiseSuppression: true }
-        });
-        document.getElementById("camera-feed").srcObject = videoStream;
-      } catch (err) {
-        console.error("Camera error:", err);
-        showError("Could not access the camera. Please make sure you have allowed camera/microphone access.");
-      }
-    }
+function showScreen(screenId) {
+document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+document.getElementById(screenId).classList.add("active");
+}
 
-    function showScreen(screenId) {
-      document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-      document.getElementById(screenId).classList.add("active");
-    }
+function startCountdown() {
+showScreen("countdown-screen");
+let count = 10;
+document.getElementById("countdown-number").textContent = count;
+countdownTimer = setInterval(() => {
+count--;
+document.getElementById("countdown-number").textContent = count;
+if (count <= 0) {
+clearInterval(countdownTimer);
+setTimeout(() => beginRecording(), 600);
+}
+}, 1000);
+}
 
-    function startCountdown() {
-      showScreen("countdown-screen");
-      let count = 10;
-      document.getElementById("countdown-number").textContent = count;
-      countdownTimer = setInterval(() => {
-        count--;
-        document.getElementById("countdown-number").textContent = count;
-        if (count <= 0) {
-          clearInterval(countdownTimer);
-          setTimeout(() => beginRecording(), 600);
-        }
-      }, 1000);
-    }
+function beginRecording() {
+showScreen("recording-screen");
+recordedChunks = [];
+recordingSeconds = 0;
+isRecording = true;
+if (!videoStream || !videoStream.active) { showError("Camera feed lost. Please refresh the page."); return; }
+document.getElementById("warning-box").classList.remove("visible");
+document.getElementById("warn-seconds").textContent = "10 seconds remaining";
+document.getElementById("rec-timer").textContent = "0:00";
+try { mediaRecorder = new MediaRecorder(videoStream, { videoBitsPerSecond: 1500000 }); } catch (e) { mediaRecorder = new MediaRecorder(videoStream); }
+currentMimeType = mediaRecorder.mimeType || "video/webm";
+mediaRecorder.ondataavailable = (event) => { if (event.data && event.data.size > 0) recordedChunks.push(event.data); };
+mediaRecorder.onstop = () => { if (recordedChunks.length > 0) showScreen("review-screen"); else showError("Recording failed: No data captured. Please refresh and try again."); };
+mediaRecorder.start(1000);
+let dotVisible = true;
+blinkTimer = setInterval(() => { dotVisible = !dotVisible; document.getElementById("rec-dot").classList.toggle("blink", !dotVisible); }, 500);
+recordingTimer = setInterval(() => {
+recordingSeconds++;
+const mins = Math.floor(recordingSeconds / 60);
+const secs = recordingSeconds % 60;
+document.getElementById("rec-timer").textContent = mins + ":" + String(secs).padStart(2, "0");
+if (recordingSeconds === 50) document.getElementById("warning-box").classList.add("visible");
+if (recordingSeconds >= 50) document.getElementById("warn-seconds").textContent = (60 - recordingSeconds) + " seconds remaining";
+if (recordingSeconds >= 60) finishRecording();
+}, 1000);
+}
 
-    function beginRecording() {
-      showScreen("recording-screen");
-      recordedChunks = [];
-      recordingSeconds = 0;
-      isRecording = true;
+function finishRecording() {
+if (!isRecording) return;
+isRecording = false;
+clearInterval(recordingTimer);
+clearInterval(blinkTimer);
+recordingTimer = null;
+blinkTimer = null;
+if (mediaRecorder && mediaRecorder.state !== "inactive") { mediaRecorder.stop(); } else { showScreen("review-screen"); }
+}
 
-      if (!videoStream || !videoStream.active) {
-        showError("Camera feed lost. Please refresh the page.");
-        return;
-      }
+function saveVideo() {
+showScreen("uploading-screen");
+document.getElementById("upload-status").textContent = "Saving your message...";
+uploadToGoogleDrive();
+}
 
-      document.getElementById("warning-box").classList.remove("visible");
-      document.getElementById("warn-seconds").textContent = "10 seconds remaining";
-      document.getElementById("rec-timer").textContent = "0:00";
+function recordAgain() { recordedChunks = []; resetToWelcome(); }
 
-      try {
-        mediaRecorder = new MediaRecorder(videoStream, { videoBitsPerSecond: 1500000 });
-      } catch (e) {
-        mediaRecorder = new MediaRecorder(videoStream);
-      }
+async function uploadToGoogleDrive() {
+try {
+const finalType = currentMimeType;
+const cleanMimeType = finalType.split(';') || "video/webm";
+const blob = new Blob(recordedChunks, { type: finalType });
+if (blob.size === 0) throw new Error("Video has no data");
+const base64 = await blobToBase64(blob);
+const base64Data = base64.split(",");
 
-      currentMimeType = mediaRecorder.mimeType || "video/webm";
+const CHUNK_SIZE = 3 * 1024 * 1024;
+const totalChunks = Math.ceil(base64Data.length / CHUNK_SIZE);
+const sessionId = Date.now() + "_" + Math.random().toString(36).substr(2, 9);
+const statusEl = document.getElementById("upload-status");
+for (let i = 0; i < totalChunks; i++) {
+statusEl.textContent = "Saving... (" + (i + 1) + "/" + totalChunks + ")";
+const start = i * CHUNK_SIZE;
+const end = Math.min(start + CHUNK_SIZE, base64Data.length);
+const chunk = base64Data.substring(start, end);
+const controller = new AbortController();
+const timeout = setTimeout(() => controller.abort(), 120000);
+await fetch(APPS_SCRIPT_URL, {
+method: "POST",
+mode: "no-cors",
+headers: { "Content-Type": "text/plain" },
+signal: controller.signal,
+body: JSON.stringify({ sessionId: sessionId, chunkIndex: i, totalChunks: totalChunks, mimeType: cleanMimeType, data: chunk })
+});
+clearTimeout(timeout);
+}
+statusEl.textContent = "Saving your message...";
+recordedChunks = [];
+showThankYou();
+} catch (err) {
+document.getElementById("upload-status").textContent = "Saving your message...";
+showError("There was a problem saving your video. Please try again.");
+}
+}
 
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data && event.data.size > 0) {
-          recordedChunks.push(event.data);
-        }
-      };
+function blobToBase64(blob) {
+return new Promise((resolve, reject) => {
+const reader = new FileReader();
+reader.onloadend = () => resolve(reader.result);
+reader.onerror = reject;
+reader.readAsDataURL(blob);
+});
+}
 
-      mediaRecorder.onstop = () => {
-        if (recordedChunks.length > 0) {
-          showScreen("review-screen");
-        } else {
-          showError("Recording failed: No data captured. Please refresh and try again.");
-        }
-      };
+function showThankYou() { showScreen("thankyou-screen"); setTimeout(() => resetToWelcome(), 5000); }
+function showError(message) { document.getElementById("error-message").textContent = message; showScreen("error-screen"); }
 
-      mediaRecorder.start(1000);
-
-      let dotVisible = true;
-      blinkTimer = setInterval(() => {
-        dotVisible = !dotVisible;
-        document.getElementById("rec-dot").classList.toggle("blink", !dotVisible);
-      }, 500);
-
-      recordingTimer = setInterval(() => {
-        recordingSeconds++;
-        const mins = Math.floor(recordingSeconds / 60);
-        const secs = recordingSeconds % 60;
-        document.getElementById("rec-timer").textContent = mins + ":" + String(secs).padStart(2, "0");
-
-        if (recordingSeconds === 50) document.getElementById("warning-box").classList.add("visible");
-        if (recordingSeconds >= 50) document.getElementById("warn-seconds").textContent = (60 - recordingSeconds) + " seconds remaining";
-        if (recordingSeconds >= 60) finishRecording();
-      }, 1000);
-    }
-
-    function finishRecording() {
-      if (!isRecording) return;
-      isRecording = false;
-      clearInterval(recordingTimer);
-      clearInterval(blinkTimer);
-      recordingTimer = null;
-      blinkTimer = null;
-      if (mediaRecorder && mediaRecorder.state !== "inactive") {
-        mediaRecorder.stop();
-      } else {
-        showScreen("review-screen");
-      }
-    }
-
-    function saveVideo() {
-      showScreen("uploading-screen");
-      document.getElementById("upload-status").textContent = "Saving your message...";
-      uploadToGoogleDrive();
-    }
-
-    function recordAgain() {
-      recordedChunks = [];
-      resetToWelcome();
-    }
-
-    async function uploadToGoogleDrive() {
-      try {
-        const finalType = currentMimeType;
-        const cleanMimeType = finalType.split(';')[0] || "video/webm";
-
-        const blob = new Blob(recordedChunks, { type: finalType });
-        if (blob.size === 0) throw new Error("Video has no data");
-
-        const base64 = await blobToBase64(blob);
-        const base64Data = base64.split(",")[1];
-
-        const CHUNK_SIZE = 3 * 1024 * 1024;
-        const totalChunks = Math.ceil(base64Data.length / CHUNK_SIZE);
-        const sessionId = Date.now() + "_" + Math.random().toString(36).substr(2, 9);
-
-        const statusEl = document.getElementById("upload-status");
-
-        for (let i = 0; i < totalChunks; i++) {
-          statusEl.textContent = "Saving... (" + (i + 1) + "/" + totalChunks + ")";
-
-          const start = i * CHUNK_SIZE;
-          const end = Math.min(start + CHUNK_SIZE, base64Data.length);
-          const chunk = base64Data.substring(start, end);
-
-          const controller = new AbortController();
-          const timeout = setTimeout(() => controller.abort(), 120000);
-
-          await fetch(APPS_SCRIPT_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "text/plain" },
-            signal: controller.signal,
-            body: JSON.stringify({
-              sessionId: sessionId,
-              chunkIndex: i,
-              totalChunks: totalChunks,
-              mimeType: cleanMimeType,
-              data: chunk
-            })
-          });
-
-          clearTimeout(timeout);
-        }
-
-        statusEl.textContent = "Saving your message...";
-        recordedChunks = [];
-        showThankYou();
-
-      } catch (err) {
-        document.getElementById("upload-status").textContent = "Saving your message...";
-        showError("There was a problem saving your video. Please try again.");
-      }
-    }
-
-    function blobToBase64(blob) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-    }
-
-    function showThankYou() {
-      showScreen("thankyou-screen");
-      setTimeout(() => resetToWelcome(), 5000);
-    }
-
-    function showError(message) {
-      document.getElementById("error-message").textContent = message;
-      showScreen("error-screen");
-    }
-
-    function resetToWelcome() {
-      clearInterval(countdownTimer);
-      clearInterval(recordingTimer);
-      clearInterval(blinkTimer);
-      countdownTimer = null;
-      recordingTimer = null;
-      blinkTimer = null;
-      isRecording = false;
-      recordingSeconds = 0;
-      recordedChunks = [];
-      if (mediaRecorder && mediaRecorder.state !== "inactive") mediaRecorder.stop();
-      mediaRecorder = null;
-      document.getElementById("rec-dot").classList.remove("blink");
-      showScreen("welcome-screen");
-    }
-  </script>
+function resetToWelcome() {
+clearInterval(countdownTimer); clearInterval(recordingTimer); clearInterval(blinkTimer);
+countdownTimer = null; recordingTimer = null; blinkTimer = null; isRecording = false; recordingSeconds = 0; recordedChunks = [];
+if (mediaRecorder && mediaRecorder.state !== "inactive") mediaRecorder.stop();
+mediaRecorder = null;
+document.getElementById("rec-dot").classList.remove("blink");
+showScreen("welcome-screen");
+}
+</script>
 </body>
 </html>
